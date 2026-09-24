@@ -196,7 +196,8 @@ for(let i=1;i<=10;i++){
 
  tr.innerHTML=`
  <td>${i}</td>
- <td class="desc"><input id="desc${i}"></td>
+ <td class="desc"><input type="text" id="desc${i}" style="pointer-events:auto !important; user-select:text !important; position:relative; z-index:10;"></td>
+
  <td><input id="qty${i}" type="number" step="any"></td>
  <td><input id="unit${i}"></td>
  <td><input id="curr${i}" value="AED"></td>
