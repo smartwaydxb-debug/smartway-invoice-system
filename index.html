@@ -13,20 +13,23 @@ button{margin:0 5px;padding:9px 18px;font-weight:bold;font-size:14px}
 .header{display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:70px;font-weight:bold;font-style:italic;color:#173d8f}
 .logo span{color:#e44732}
-.company{text-align:right;line-height:1.45}
+.company{text-align:right;line-height:1.4}
 .company h2{margin:0;color:#173d8f}
 .title{text-align:center;background:#aebfd8;color:#000;font-size:34px;font-weight:bold;padding:6px;margin:15px 0}
+
 .details{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .box{border:1px solid #647d9e}
 .box h3{background:#aebfd8;margin:0;padding:7px;color:#102c4a}
 .row{display:grid;grid-template-columns:145px 1fr;border-top:1px solid #aab6c5;min-height:38px;align-items:center}
 .label{font-weight:bold;padding:7px}
 input{width:100%;border:0;padding:7px;font-size:14px;background:#fff;outline:none}
+
 table{width:100%;border-collapse:collapse;margin-top:12px}
 th,td{border:1px solid #8193aa;padding:0;text-align:center;height:36px}
 th{background:#aebfd8;padding:7px 3px}
 td input{text-align:center;height:34px;padding:4px}
 td.desc input{text-align:left}
+
 .summary{display:grid;grid-template-columns:2fr 1fr;margin-top:10px;gap:8px}
 .words,.totals{border:1px solid #8193aa}
 .words h3{background:#aebfd8;margin:0;padding:7px}
@@ -34,9 +37,334 @@ td.desc input{text-align:left}
 .totalrow{display:grid;grid-template-columns:1.5fr 1fr;border-bottom:1px solid #8193aa}
 .totalrow b{padding:8px}
 .totalrow span{padding:8px;text-align:right;font-weight:bold}
+
 .bank,.terms{border:1px solid #8193aa;margin-top:10px;padding:10px}
 .bank h3,.terms h3{background:#aebfd8;margin:-10px -10px 10px;padding:7px}
+
 @media print{
  body{background:white}
  .bar{display:none}
- .sheet{margin:0;box-shadow:none;width:100
+ .sheet{margin:0;box-shadow:none;width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<div class="bar">
+<button onclick="newInvoice()">New Invoice</button>
+<button onclick="saveInvoice()">Save</button>
+<button onclick="searchInvoice()">Search / View</button>
+<button onclick="window.print()">Print / PDF</button>
+</div>
+
+<div class="sheet">
+
+<div class="header">
+<div class="logo"><span>S</span>WT</div>
+
+<div class="company">
+<h2>SmartWay Transport L.L.C</h2>
+<div>Po Box 238752, Dubai, Ras Al Khor</div>
+<div>TRN No: 10039032730000</div>
+<div>Mob: 050 304 0565</div>
+<div>Land: 04 327 2094</div>
+</div>
+</div>
+
+<div class="title">TAX INVOICE</div>
+
+<div class="details">
+
+<div class="box">
+<h3>Invoice Receiver / Customer Details</h3>
+
+<div class="row">
+<div class="label">Customer Name</div>
+<input id="customer">
+</div>
+
+<div class="row">
+<div class="label">Address</div>
+<input id="address">
+</div>
+
+<div class="row">
+<div class="label">TRN No.</div>
+<input id="trn">
+</div>
+
+<div class="row">
+<div class="label">Contact / Phone</div>
+<input id="phone">
+</div>
+</div>
+
+<div class="box">
+<h3>Invoice Details</h3>
+
+<div class="row">
+<div class="label">Invoice No.</div>
+<input id="invoice">
+</div>
+
+<div class="row">
+<div class="label">Date</div>
+<input id="date" type="date">
+</div>
+
+<div class="row">
+<div class="label">Consignment No.</div>
+<input id="consignment">
+</div>
+
+<div class="row">
+<div class="label">Vehicle No.</div>
+<input id="vehicle">
+</div>
+
+<div class="row">
+<div class="label">Payment Terms</div>
+<input id="payment" value="30 Days">
+</div>
+</div>
+
+</div>
+
+<table>
+<thead>
+<tr>
+<th>SL</th>
+<th>Description / Charges</th>
+<th>Qty</th>
+<th>Unit</th>
+<th>Curr.</th>
+<th>Rate</th>
+<th>Amount</th>
+<th>VAT %</th>
+<th>VAT Amount</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="items"></tbody>
+</table>
+
+<div class="summary">
+
+<div class="words">
+<h3>Amount in Words</h3>
+<div id="words">UAE DIRHAMS ZERO ONLY.</div>
+</div>
+
+<div class="totals">
+<div class="totalrow">
+<b>Sub Total</b>
+<span id="subtotal">0.00</span>
+</div>
+
+<div class="totalrow">
+<b>Total VAT Amount</b>
+<span id="totalvat">0.00</span>
+</div>
+
+<div class="totalrow">
+<b>Grand Total (AED)</b>
+<span id="grandtotal">0.00</span>
+</div>
+</div>
+
+</div>
+
+<div class="bank">
+<h3>Bank Details</h3>
+<div>Smart Way Transport L.L.C</div>
+</div>
+
+<div class="terms">
+<h3>Terms & Conditions</h3>
+<div>Thank you for your business.</div>
+</div>
+
+</div>
+
+<script>
+const tbody=document.getElementById("items");
+
+for(let i=1;i<=10;i++){
+ let tr=document.createElement("tr");
+
+ tr.innerHTML=`
+ <td>${i}</td>
+ <td class="desc"><input id="desc${i}"></td>
+ <td><input id="qty${i}" type="number" step="any"></td>
+ <td><input id="unit${i}"></td>
+ <td><input id="curr${i}" value="AED"></td>
+ <td><input id="rate${i}" type="number" step="any"></td>
+ <td><input id="amount${i}" readonly></td>
+ <td><input id="vat${i}" type="number" step="any"></td>
+ <td><input id="vatamount${i}" readonly></td>
+ <td><input id="total${i}" readonly></td>
+ `;
+
+ tbody.appendChild(tr);
+}
+
+document.getElementById("date").value=
+new Date().toISOString().slice(0,10);
+
+document.querySelectorAll("#items input").forEach(x=>{
+ x.addEventListener("input",calculate);
+});
+
+function calculate(){
+
+ let subtotal=0;
+ let totalvat=0;
+
+ for(let i=1;i<=10;i++){
+
+  let qty=parseFloat(document.getElementById("qty"+i).value)||0;
+  let rate=parseFloat(document.getElementById("rate"+i).value)||0;
+  let vat=parseFloat(document.getElementById("vat"+i).value)||0;
+
+  let amount=qty*rate;
+  let vatamount=amount*vat/100;
+  let total=amount+vatamount;
+
+  document.getElementById("amount"+i).value=
+  amount ? amount.toFixed(2) : "";
+
+  document.getElementById("vatamount"+i).value=
+  vatamount ? vatamount.toFixed(2) : "";
+
+  document.getElementById("total"+i).value=
+  total ? total.toFixed(2) : "";
+
+  subtotal+=amount;
+  totalvat+=vatamount;
+ }
+
+ let grand=subtotal+totalvat;
+
+ document.getElementById("subtotal").textContent=subtotal.toFixed(2);
+ document.getElementById("totalvat").textContent=totalvat.toFixed(2);
+ document.getElementById("grandtotal").textContent=grand.toFixed(2);
+
+ document.getElementById("words").textContent=
+ "UAE DIRHAMS "+numberWords(Math.round(grand))+" ONLY.";
+}
+
+function numberWords(n){
+
+ if(n===0)return "ZERO";
+
+ const ones=["","ONE","TWO","THREE","FOUR","FIVE","SIX","SEVEN","EIGHT","NINE","TEN","ELEVEN","TWELVE","THIRTEEN","FOURTEEN","FIFTEEN","SIXTEEN","SEVENTEEN","EIGHTEEN","NINETEEN"];
+
+ const tens=["","","TWENTY","THIRTY","FORTY","FIFTY","SIXTY","SEVENTY","EIGHTY","NINETY"];
+
+ function under1000(num){
+  let s="";
+  if(num>=100){
+   s+=ones[Math.floor(num/100)]+" HUNDRED ";
+   num%=100;
+  }
+  if(num>=20){
+   s+=tens[Math.floor(num/10)]+" ";
+   num%=10;
+  }
+  if(num>0)s+=ones[num]+" ";
+  return s.trim();
+ }
+
+ let out="";
+
+ if(n>=1000000){
+  out+=under1000(Math.floor(n/1000000))+" MILLION ";
+  n%=1000000;
+ }
+
+ if(n>=1000){
+  out+=under1000(Math.floor(n/1000))+" THOUSAND ";
+  n%=1000;
+ }
+
+ if(n>0)out+=under1000(n);
+
+ return out.trim();
+}
+
+function getData(){
+
+ let data={};
+
+ document.querySelectorAll("input").forEach(x=>{
+  if(x.id)data[x.id]=x.value;
+ });
+
+ return data;
+}
+
+function saveInvoice(){
+
+ let no=document.getElementById("invoice").value.trim();
+
+ if(!no){
+  alert("Please enter Invoice No.");
+  return;
+ }
+
+ localStorage.setItem(
+  "smartway_"+no,
+  JSON.stringify(getData())
+ );
+
+ alert("Invoice saved: "+no);
+}
+
+function searchInvoice(){
+
+ let no=prompt("Enter Invoice No.");
+
+ if(!no)return;
+
+ let saved=localStorage.getItem("smartway_"+no);
+
+ if(!saved){
+  alert("Invoice not found");
+  return;
+ }
+
+ let data=JSON.parse(saved);
+
+ Object.keys(data).forEach(id=>{
+  let el=document.getElementById(id);
+  if(el)el.value=data[id];
+ });
+
+ calculate();
+}
+
+function newInvoice(){
+
+ document.querySelectorAll("input").forEach(x=>{
+  x.value="";
+ });
+
+ document.getElementById("payment").value="30 Days";
+
+ for(let i=1;i<=10;i++){
+  document.getElementById("curr"+i).value="AED";
+ }
+
+ document.getElementById("date").value=
+ new Date().toISOString().slice(0,10);
+
+ calculate();
+}
+
+calculate();
+</script>
+
+</body>
+</html>
