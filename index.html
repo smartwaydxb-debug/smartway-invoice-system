@@ -21,6 +21,25 @@ button{margin:0 4px;padding:8px 14px;font-weight:bold}
 <input class="f" id="cons" placeholder="Consignment No."><input class="f" id="veh" placeholder="Vehicle No.">
 <input class="f" id="pay" value="30 Days">
 </div>
+  <div style="position:absolute;left:55px;top:430px;width:660px;">
+<table style="width:100%;border-collapse:collapse;">
+<tbody>
+<script>
+for(let i=1;i<=10;i++){
+document.write(`<tr>
+<td><input class="f" id="sl${i}" value="${i}" style="width:35px"></td>
+<td><input class="f" id="desc${i}" placeholder="Description / Charges" style="width:245px"></td>
+<td><input class="f" id="qty${i}" placeholder="Qty" style="width:45px"></td>
+<td><input class="f" id="unit${i}" placeholder="Unit" style="width:50px"></td>
+<td><input class="f" id="curr${i}" value="AED" style="width:50px"></td>
+<td><input class="f" id="rate${i}" placeholder="Rate" style="width:70px"></td>
+<td><input class="f" id="vat${i}" placeholder="VAT %" style="width:55px"></td>
+</tr>`);
+}
+</script>
+</tbody>
+</table>
+</div>
 <script>
 date.value=new Date().toISOString().slice(0,10);
 function obj(){let o={};document.querySelectorAll('.f').forEach(x=>o[x.id]=x.value);return o}
