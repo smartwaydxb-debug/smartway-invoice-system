@@ -74,8 +74,56 @@ function calculate(){let sub=0,vat=0;for(let i=1;i<=10;i++){let am=n(document.ge
 rows.addEventListener('input',calculate);
 function data(){let o={};document.querySelectorAll('input,textarea').forEach(e=>{if(e.id)o[e.id]=e.value});return o}
 function apply(o){Object.entries(o||{}).forEach(([k,v])=>{let e=document.getElementById(k);if(e)e.value=v});calculate()}
-function saveInvoice(){let no=invoice.value.trim();if(!no){alert('Please enter Invoice No.');invoice.focus();return}localStorage.setItem('SWI_'+no,JSON.stringify(data()));alert('Invoice saved: '+no)}
-function loadInvoice(){let no=prompt('Enter Invoice No.');if(!no)return;let z=localStorage.getItem('SWI_'+no);if(!z){alert('Invoice not found');return}apply(JSON.parse(z))}
+const SUPABASE_URL='https://bexmssexrdzazvlzkfeo.supabase.co';
+const SUPABASE_KEY='sb_publishable_n5umo-jUDcWQa2pSjXjbsA_R4lX39gL';
+const sbHeaders={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'};
+async function sb(path,opt={}){let r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opt,headers:{...sbHeaders,...(opt.headers||{})}});let tx=await r.text();if(!r.ok)throw new Error(tx||('HTTP '+r.status));return tx?JSON.parse(tx):null}
+async function saveInvoice(){
+ let no=invoice.value.trim();if(!no){alert('Please enter Invoice No.');invoice.focus();return}
+ try{
+   let customerName=(customer.value||'').trim();
+   let customerId=null;
+   if(customerName){
+     let found=await sb('customers?select=id&customer_name=eq.'+encodeURIComponent(customerName)+'&limit=1');
+     if(found&&found.length)customerId=found[0].id;
+     else{
+       let cr=await sb('customers',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify({customer_name:customerName,address:address.value||null,trn_no:trn.value||null,phone:phone.value||null})});
+       customerId=cr&&cr[0]?cr[0].id:null;
+     }
+   }
+   let invFound=await sb('invoices?select=id&invoice_no=eq.'+encodeURIComponent(no)+'&limit=1');
+   let invPayload={invoice_no:no,invoice_date:date.value||null,customer_id:customerId,consignment_no:consignment.value||null};
+   let invoiceId;
+   if(invFound&&invFound.length){
+     invoiceId=invFound[0].id;
+     await sb('invoices?id=eq.'+invoiceId,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(invPayload)});
+     await sb('invoice_items?invoice_id=eq.'+invoiceId,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+   }else{
+     let ir=await sb('invoices',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(invPayload)});
+     invoiceId=ir&&ir[0]?ir[0].id:null;
+   }
+   let items=[];
+   for(let i=1;i<=10;i++){let d=document.getElementById('d'+i).value.trim(),q=n(document.getElementById('q'+i).value),r=n(document.getElementById('r'+i).value),vp=n(document.getElementById('v'+i).value);if(d||q||r)items.push({invoice_id:invoiceId,description:d,qty:q,unit:document.getElementById('u'+i).value||null,currency:document.getElementById('c'+i).value||'AED',rate:r,amount:q*r,vat_percent:vp,vat_amount:q*r*vp/100,total:q*r*(1+vp/100)})}
+   if(items.length)await sb('invoice_items',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(items)});
+   alert('Invoice saved to Supabase: '+no);
+ }catch(e){console.error(e);alert('Save failed. '+e.message)}
+}
+async function loadInvoice(){
+ let no=prompt('Enter Invoice No.');if(!no)return;
+ try{
+   let inv=await sb('invoices?select=*&invoice_no=eq.'+encodeURIComponent(no.trim())+'&limit=1');
+   if(!inv||!inv.length){alert('Invoice not found');return}
+   let x=inv[0],cust=[];
+   if(x.customer_id)cust=await sb('customers?select=*&id=eq.'+x.customer_id+'&limit=1');
+   let cst=cust&&cust[0]?cust[0]:{};
+   let items=await sb('invoice_items?select=*&invoice_id=eq.'+x.id+'&order=id.asc');
+   newInvoice();
+   invoice.value=x.invoice_no||'';date.value=x.invoice_date||'';consignment.value=x.consignment_no||'';vehicle.value=x.vehicle_no||'';payment.value=x.payment_terms||'30 Days';
+   customer.value=cst.customer_name||'';address.value=cst.address||'';trn.value=cst.trn_no||'';phone.value=cst.phone||'';
+   (items||[]).slice(0,10).forEach((it,j)=>{let i=j+1;document.getElementById('d'+i).value=it.description||'';document.getElementById('q'+i).value=it.qty??'';document.getElementById('u'+i).value=it.unit||'';document.getElementById('c'+i).value=it.currency||'AED';document.getElementById('r'+i).value=it.rate??'';document.getElementById('v'+i).value=it.vat_percent??'';});
+   calculate();alert('Invoice loaded: '+no.trim());
+ }catch(e){console.error(e);alert('Search failed. '+e.message)}
+}
 function newInvoice(){document.querySelectorAll('input:not([readonly])').forEach(e=>e.value='');payment.value='30 Days';date.value=new Date().toISOString().slice(0,10);for(let i=1;i<=10;i++){document.getElementById('c'+i).value='AED';document.getElementById('sl'+i).value=i}calculate()}
 date.value=new Date().toISOString().slice(0,10);calculate();
 </script></body></html>
